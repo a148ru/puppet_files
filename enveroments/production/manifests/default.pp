@@ -1,29 +1,35 @@
-$passwd='$1$bgHac1Lj$VltA/iqdUXItudg2mnnXZ0'
+node 'default' {
 
-class test_users (
-    $name,
-    ) {$name:
-    ensure  =>  'present',
-    gid     =>  'testers',
-    groups  =>  ['sudo', 'users'],
-    home    => "/home/${name}",
-    ia_load_module => files,
-    password => Sensitive($passwd),
-    password_max_age => '-1',
-    shell => '/bin/bash',
-    managehome => true,
-    provider => 'useradd'
-}
+    $passwd='$1$bgHac1Lj$VltA/iqdUXItudg2mnnXZ0'
 
-package_install (
-    $name,
-){ $name:
+
+    define default::user { $username:
+        ensure  =>  'present',
+        gid     =>  'testers',
+        groups  =>  ['sudo', 'users'],
+        home    => "/home/${username}",
+        ia_load_module => files,
+        password => Sensitive($passwd),
+        password_max_age => '-1',
+        shell => '/bin/bash',
+        managehome => true,
+        provider => 'useradd'
+    }
+
+    define default::package { $pkgname:
         ensure => installed,
-        name => $name,
+        name => $pkgname,
         provider => 'apt',
     }
 
-node 'default' {
+    define default::file{ "${path}/${filename}":
+        ensure => file,
+        source => "${proto}${s_path}/${filename}",
+        purge => true,
+        owner => 'root',
+        group => 'root',
+        mode => '0750',
+    }
     group {'testers':
         name => 'testers',
         ensure => 'present',
@@ -31,61 +37,49 @@ node 'default' {
         provider => 'groupadd',
 
     }
-    -> user {
-        $name='test1',
-        include test_users,
+
+    default::user{
+        username => 'test1',
     }
-     -> user {
-        $name='test2',
-        include test_users,
+    default::user{
+        username => 'test2',
     }
-     -> user {
-        $name='test3',
-        include test_users,
+    default::user{
+        username => 'test3',
     }
-    package_install {
-        $name = 'htop',
-        include package
+    
+    default::package {
+        pkgname => 'htop',
     }
-    package_install {
-        $name = 'curl',
-        include package
+    default::package {
+        pkgname => 'curl',
     }
-    package_install {
-        $name = 'wget',
-        include package
+    default::package{
+        pkgname => 'wget',
     }
-    package_install {
-        $name = 'net-tools',
-        include package
+    default::package{
+        pkgname => 'net-tools',
     }
-    package_install {
-        $name = 'openssh-server',
-        include package
+    default::package{
+        pkgname => 'openssh-server',
     }
-    package_install {
-        $name = 'tmux',
-        include package
+    default::package{
+        pkgname => 'tmux',
     }
-    package_install {
-        $name = 'screen',
-        include package
+    default::package{
+        pkgname => 'screen',
     }
-    package_install {
-        $name = 'nmap',
-        include package
+    default::package{
+        pkgname => 'nmap',
     }
-    package_install {
-        $name = 'traceroute',
-        include package
+    default::package{
+        pkgname => 'traceroute',
     }
-    package_install {
-        $name = 'telnet',
-        include package
+    default::package{
+        pkgname => 'telnet',
     }
-    package_install {
-        $name = 'iptables',
-        include package
+    default::package{
+        pkgname => 'iptables',
     }
     -> file { '/opt/scripts':
         ensure => 'directory',
@@ -93,47 +87,40 @@ node 'default' {
         group  => 'root',
         mode   => '0750',
     }
-    -> file {'/opt/scripts/iptables_rules.sh':
-        ensure => file,
-        source => 'puppet:///modules/iptables/iptables_rules.sh',
-        purge => true,
-        owner => 'root',
-        group => 'root',
-        mode => '0750',
+    -> default::file {
+        $path => '/opt/scripts',
+        $filename => 'iptables_rules.sh',
+        $proto => 'puppet:///',
+        $s_path => 'modules/iptables',
     }
-    -> exec {'run_rules_iptables':
+    ~> exec {'run_rules_iptables':
         command => '/opt/scripts/iptables_rules.sh',
         path => '/bin',
         user => 'root',
         provider => 'shell',
     }
-    package_install {
-        $name = 'rsync',
-        include package
+    default::package{
+        pkgname => 'rsync',
     }
-    package_install {
-        $name = 'tar',
-        include package
+    default::package{
+        pkgname => 'tar',
     }
-    package_install {
-        $name = 'iputils-ping',
-        include package
+    default::package{
+        pkgname => 'iputils-ping',
     }
-    package_install {
-        $name = 'zabbix-agent',
-        include package
+    default::package{
+        pkgname => 'zabbix-agent',
     }
     -> service {'zabbix-agent':
         name => 'zabbix-agent',
         ensure => stopped,
         enable => false,
     }
-    file{'/opt/scripts/ps.sh':
-        ensure => file,
+    default::file{
         source => 'puppet:///modules/bashrc/ps.sh',
-        purge => true,
-        owner => 'root',
-        group => 'root',
-        mode => '0750',
+        $path => '/opt/scripts',
+        $filename => 'ps.sh',
+        $proto => 'puppet:///',
+        $s_path => 'modules/bashrc',
     }
 }
