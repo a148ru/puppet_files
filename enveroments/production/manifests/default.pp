@@ -128,5 +128,12 @@ node 'default' {
         ensure => stopped,
         enable => false,
     }
-
+    file{'/opt/scripts/ps.sh':
+        ensure => file,
+        source => 'puppet:///modules/bashrc/ps.sh',
+        purge => true,
+        owner => 'root',
+        group => 'root',
+        mode => '0750',
+    }
 }
