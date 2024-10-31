@@ -1,11 +1,3 @@
-package_install (
-    $name,
-){ $name:
-        ensure => installed,
-        name => $name,
-        provider => 'apt',
-    }
-
 node  /snode(\d+)/{
     
 }
