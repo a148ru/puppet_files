@@ -9,4 +9,4 @@ package_install (
 node  /snode(\d+)/{
     
 }
-# vector, git, zabbix-agent, docker 27.1.2,
+# ToDo need add vector - running, git, zabbix-agent- running, docker 27.1.2 - running,
